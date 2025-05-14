@@ -42,7 +42,7 @@ with tab1:
     fig.update_layout(yaxis=dict(range=[0, 30]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
 
-    # Résumé automatique
+    # Résumé
     nb_tests = df_filtered[selected_ab].count()
     moyenne = df_filtered[selected_ab].mean()
     semaine_pic = df_filtered.loc[df_filtered[selected_ab].idxmax(), week_col]
@@ -51,6 +51,15 @@ with tab1:
     st.write(f"🔢 **Nombre de semaines analysées** : {nb_tests}")
     st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
     st.write(f"🚨 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
+
+    # 🔴 Alerte automatique
+    last_val = df_filtered[selected_ab].dropna().iloc[-1]
+    if last_val > upper:
+        st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
+    elif last_val < lower:
+        st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")
+    else:
+        st.success(f"✅ Résistance dans la norme cette semaine ({last_val:.2f} %)")
 
 # === Onglet 2 : Autres Antibiotiques ===
 with tab2:
@@ -80,7 +89,7 @@ with tab2:
     fig.update_layout(yaxis=dict(range=[0, 30]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
 
-    # Résumé automatique
+    # Résumé
     nb_tests = df_filtered[selected_ab].count()
     moyenne = df_filtered[selected_ab].mean()
     semaine_pic = df_filtered.loc[df_filtered[selected_ab].idxmax(), week_col]
@@ -90,7 +99,15 @@ with tab2:
     st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
     st.write(f"🚨 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
 
-# === Onglet 3 : Phénotypes ===
+    # 🔴 Alerte automatique
+    last_val = df_filtered[selected_ab].dropna().iloc[-1]
+    if last_val > upper:
+        st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
+    elif last_val < lower:
+        st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")
+    else:
+        st.success(f"✅ Résistance dans la norme cette semaine ({last_val:.2f} %)")
+        # === Onglet 3 : Phénotypes ===
 with tab3:
     st.header("🧬 Phénotypes - Staphylococcus aureus")
     df_pheno = pd.read_excel("staph_aureus_pheno_final.xlsx")
@@ -124,7 +141,7 @@ with tab3:
     fig.update_layout(yaxis=dict(range=[0, 100]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
 
-    # Résumé automatique
+    # Résumé
     nb_tests = filtered_pheno[pct_col].count()
     moyenne = filtered_pheno[pct_col].mean()
     semaine_pic = filtered_pheno.loc[filtered_pheno[pct_col].idxmax(), "Week"]
@@ -133,6 +150,15 @@ with tab3:
     st.write(f"🔢 **Nombre de semaines analysées** : {nb_tests}")
     st.write(f"📊 **Moyenne de {selected_pheno}** : {moyenne:.2f} %")
     st.write(f"🚨 **Semaine avec le pic de {selected_pheno}** : {semaine_pic}")
+
+    # 🔴 Alerte automatique
+    last_val = filtered_pheno[pct_col].dropna().iloc[-1]
+    if last_val > upper:
+        st.error(f"🚨 Alerte : taux élevé de **{selected_pheno}** cette semaine ({last_val:.2f} %)")
+    elif last_val < lower:
+        st.warning(f"⚠️ Taux anormalement bas de **{selected_pheno}** cette semaine ({last_val:.2f} %)")
+    else:
+        st.success(f"✅ Taux de **{selected_pheno}** dans la norme cette semaine ({last_val:.2f} %)")
 
 # === Onglet 4 : Fiches Bactéries ===
 with tab4:
@@ -161,3 +187,4 @@ with tab4:
         st.write(details["Phenotype"])
     else:
         st.info("Aucune bactérie ne correspond à votre recherche.")
+

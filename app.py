@@ -42,6 +42,16 @@ with tab1:
     fig.update_layout(yaxis=dict(range=[0, 30]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
 
+    # Résumé automatique
+    nb_tests = df_filtered[selected_ab].count()
+    moyenne = df_filtered[selected_ab].mean()
+    semaine_pic = df_filtered.loc[df_filtered[selected_ab].idxmax(), week_col]
+
+    st.markdown("### 🧾 Résumé")
+    st.write(f"🔢 **Nombre de semaines analysées** : {nb_tests}")
+    st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
+    st.write(f"🚨 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
+
 # === Onglet 2 : Autres Antibiotiques ===
 with tab2:
     st.header("🧪 Autres Antibiotiques - Staph aureus")
@@ -69,6 +79,16 @@ with tab2:
     fig.add_trace(go.Scatter(x=df_filtered[week_col], y=[lower]*len(df_filtered), mode='lines', name="Seuil bas", line=dict(dash='dot')))
     fig.update_layout(yaxis=dict(range=[0, 30]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
+
+    # Résumé automatique
+    nb_tests = df_filtered[selected_ab].count()
+    moyenne = df_filtered[selected_ab].mean()
+    semaine_pic = df_filtered.loc[df_filtered[selected_ab].idxmax(), week_col]
+
+    st.markdown("### 🧾 Résumé")
+    st.write(f"🔢 **Nombre de semaines analysées** : {nb_tests}")
+    st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
+    st.write(f"🚨 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
 
 # === Onglet 3 : Phénotypes ===
 with tab3:
@@ -103,6 +123,16 @@ with tab3:
                              mode='lines', name="Seuil bas", line=dict(dash='dot', color='red')))
     fig.update_layout(yaxis=dict(range=[0, 100]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
+
+    # Résumé automatique
+    nb_tests = filtered_pheno[pct_col].count()
+    moyenne = filtered_pheno[pct_col].mean()
+    semaine_pic = filtered_pheno.loc[filtered_pheno[pct_col].idxmax(), "Week"]
+
+    st.markdown("### 🧾 Résumé")
+    st.write(f"🔢 **Nombre de semaines analysées** : {nb_tests}")
+    st.write(f"📊 **Moyenne de {selected_pheno}** : {moyenne:.2f} %")
+    st.write(f"🚨 **Semaine avec le pic de {selected_pheno}** : {semaine_pic}")
 
 # === Onglet 4 : Fiches Bactéries ===
 with tab4:

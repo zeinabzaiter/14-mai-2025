@@ -186,6 +186,25 @@ with tab4:
     else:
         st.info("Aucune bactérie ne correspond à votre recherche.")
 
+import pandas as pd
+import numpy as np
+import streamlit as st
+import plotly.graph_objects as go
+
+st.set_page_config(layout="wide")
+st.title("🧬 Tableau de bord unifié - Résistances bactériennes")
+
+# === Onglets ===
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "📌 Antibiotiques 2024", 
+    "🧪 Autres Antibiotiques", 
+    "🧠 Phénotypes Staph aureus", 
+    "🧫 Fiches Bactéries",
+    "🔔 Alertes par service"
+])
+
+# (le code précédent reste inchangé jusqu'à tab5)
+
 # === Onglet 5 : Alertes par service ===
 with tab5:
     st.header("🔔 Services concernés par des alertes de résistance")
@@ -221,4 +240,26 @@ with tab5:
     phenos = ["MRSA", "Other", "VRSA", "Wild"]
     df_pheno["Total"] = df_pheno[phenos].sum(axis=1)
     for pheno in phenos:
-        df_pheno[f"% {pheno}"] = (df_pheno[pheno] / df_pheno["Total
+        df_pheno[f"% {pheno}"] = (df_pheno[pheno] / df_pheno["Total"]) * 100
+        values = df_pheno[f"% {pheno}"].dropna()
+        if not values.empty:
+            q1, q3 = np.percentile(values, [25, 75])
+            iqr = q3 - q1
+            upper = q3 + 1.5 * iqr
+            alert_subset = df_pheno[df_pheno[f"% {pheno}"] > upper]
+            alert_weeks += alert_subset["Week"].tolist()
+
+    alert_weeks = sorted(set(int(w) for w in alert_weeks if pd.notna(w)))
+
+    if alert_weeks:
+        selected_week = st.selectbox("🗓️ Choisissez une semaine avec alerte :", alert_weeks)
+        services_alertes = df_service[df_service["Week"] == selected_week]["DEMANDEUR"].dropna().unique()
+        if len(services_alertes) > 0:
+            selected_service = st.selectbox("🏥 Choisissez un service :", services_alertes)
+            st.subheader(f"Données du service **{selected_service}** pour la semaine {selected_week}")
+            df_details = df_service[(df_service["Week"] == selected_week) & (df_service["DEMANDEUR"] == selected_service)]
+            st.dataframe(df_details)
+        else:
+            st.info("Aucun service enregistré pour cette semaine.")
+    else:
+        st.success("✅ Aucune semaine avec alerte détectée.")

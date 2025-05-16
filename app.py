@@ -7,11 +7,12 @@ st.set_page_config(layout="wide")
 st.title("🧬 Tableau de bord unifié - Résistances bactériennes")
 
 # === Onglets ===
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📌 Antibiotiques 2024", 
     "🧪 Autres Antibiotiques", 
-    "🧬 Phénotypes Staph aureus", 
-    "🧫 Fiches Bactéries"
+    "🧠 Phénotypes Staph aureus", 
+    "🧫 Fiches Bactéries",
+    "🔔 Alertes par service"
 ])
 
 # === Onglet 1 : Antibiotiques 2024 ===
@@ -89,7 +90,6 @@ with tab2:
     fig.update_layout(yaxis=dict(range=[0, 30]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
 
-    # Résumé
     nb_tests = df_filtered[selected_ab].count()
     moyenne = df_filtered[selected_ab].mean()
     semaine_pic = df_filtered.loc[df_filtered[selected_ab].idxmax(), week_col]
@@ -99,7 +99,6 @@ with tab2:
     st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
     st.write(f"🚨 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
 
-    # 🔴 Alerte automatique
     last_val = df_filtered[selected_ab].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
@@ -107,9 +106,10 @@ with tab2:
         st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")
     else:
         st.success(f"✅ Résistance dans la norme cette semaine ({last_val:.2f} %)")
-        # === Onglet 3 : Phénotypes ===
+
+# === Onglet 3 : Phénotypes ===
 with tab3:
-    st.header("🧬 Phénotypes - Staphylococcus aureus")
+    st.header("🧠 Phénotypes - Staphylococcus aureus")
     df_pheno = pd.read_excel("staph_aureus_pheno_final.xlsx")
     df_pheno.columns = df_pheno.columns.str.strip()
     df_pheno["week"] = pd.to_datetime(df_pheno["week"], errors="coerce")
@@ -138,10 +138,9 @@ with tab3:
                              mode='lines', name="Seuil haut", line=dict(dash='dash', color='red')))
     fig.add_trace(go.Scatter(x=filtered_pheno["Week"], y=[lower]*len(filtered_pheno),
                              mode='lines', name="Seuil bas", line=dict(dash='dot', color='red')))
-    fig.update_layout(yaxis=dict(range=[0, 100]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
+    fig.update_layout(yaxis=dict(range=[0, 100] if selected_pheno == "MRSA" else [0, 30]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
 
-    # Résumé
     nb_tests = filtered_pheno[pct_col].count()
     moyenne = filtered_pheno[pct_col].mean()
     semaine_pic = filtered_pheno.loc[filtered_pheno[pct_col].idxmax(), "Week"]
@@ -151,7 +150,6 @@ with tab3:
     st.write(f"📊 **Moyenne de {selected_pheno}** : {moyenne:.2f} %")
     st.write(f"🚨 **Semaine avec le pic de {selected_pheno}** : {semaine_pic}")
 
-    # 🔴 Alerte automatique
     last_val = filtered_pheno[pct_col].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : taux élevé de **{selected_pheno}** cette semaine ({last_val:.2f} %)")
@@ -183,8 +181,44 @@ with tab4:
         st.write("**💊 Other Antibiotics**")
         st.write(details["Other Antibiotics"])
 
-        st.write("**🧬 Phénotype**")
+        st.write("**🧞 Phénotype**")
         st.write(details["Phenotype"])
     else:
         st.info("Aucune bactérie ne correspond à votre recherche.")
 
+# === Onglet 5 : Alertes par service ===
+with tab5:
+    st.header("🔔 Services concernés par des alertes de résistance")
+
+    df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
+    df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
+    df_service = df_service.dropna(subset=['DATE_ENTREE'])
+    df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
+    df_service['Année'] = df_service['DATE_ENTREE'].dt.year
+    df_service = df_service[df_service['Année'] == 2024]
+
+    alert_weeks = []
+    for df_path in ["tests_par_semaine_antibiotiques_2024.csv", "other Antibiotiques staph aureus.xlsx"]:
+        df_tmp = pd.read_csv(df_path) if df_path.endswith(".csv") else pd.read_excel(df_path)
+        df_tmp.columns = df_tmp.columns.str.strip()
+        week_col = "Week" if "Week" in df_tmp.columns else df_tmp.columns[0]
+        df_tmp = df_tmp[df_tmp[week_col].apply(lambda x: str(x).isdigit())]
+        df_tmp[week_col] = df_tmp[week_col].astype(int)
+        ab_cols = [col for col in df_tmp.columns if col.startswith('%')]
+        for ab in ab_cols:
+            values = pd.to_numeric(df_tmp[ab], errors='coerce').dropna()
+            if not values.empty:
+                q1, q3 = np.percentile(values, [25, 75])
+                iqr = q3 - q1
+                upper = q3 + 1.5 * iqr
+                alert_subset = df_tmp[df_tmp[ab] > upper]
+                alert_weeks += alert_subset[week_col].tolist()
+
+    df_pheno = pd.read_excel("staph_aureus_pheno_final.xlsx")
+    df_pheno['week'] = pd.to_datetime(df_pheno['week'], errors='coerce')
+    df_pheno = df_pheno.dropna(subset=['week'])
+    df_pheno['Week'] = df_pheno['week'].dt.isocalendar().week
+    phenos = ["MRSA", "Other", "VRSA", "Wild"]
+    df_pheno["Total"] = df_pheno[phenos].sum(axis=1)
+    for pheno in phenos:
+        df_pheno[f"% {pheno}"] = (df_pheno[pheno] / df_pheno["Total

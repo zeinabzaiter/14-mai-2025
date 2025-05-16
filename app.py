@@ -43,7 +43,6 @@ with tab1:
     fig.update_layout(yaxis=dict(range=[0, 30]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
 
-    # Résumé
     nb_tests = df_filtered[selected_ab].count()
     moyenne = df_filtered[selected_ab].mean()
     semaine_pic = df_filtered.loc[df_filtered[selected_ab].idxmax(), week_col]
@@ -53,7 +52,6 @@ with tab1:
     st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
     st.write(f"🚨 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
 
-    # 🔴 Alerte automatique
     last_val = df_filtered[selected_ab].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
@@ -61,7 +59,6 @@ with tab1:
         st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")
     else:
         st.success(f"✅ Résistance dans la norme cette semaine ({last_val:.2f} %)")
-
 # === Onglet 2 : Autres Antibiotiques ===
 with tab2:
     st.header("🧪 Autres Antibiotiques - Staph aureus")
@@ -157,7 +154,6 @@ with tab3:
         st.warning(f"⚠️ Taux anormalement bas de **{selected_pheno}** cette semaine ({last_val:.2f} %)")
     else:
         st.success(f"✅ Taux de **{selected_pheno}** dans la norme cette semaine ({last_val:.2f} %)")
-
 # === Onglet 4 : Fiches Bactéries ===
 with tab4:
     st.header("🧫 Détail des bactéries à étudier")
@@ -185,25 +181,6 @@ with tab4:
         st.write(details["Phenotype"])
     else:
         st.info("Aucune bactérie ne correspond à votre recherche.")
-
-import pandas as pd
-import numpy as np
-import streamlit as st
-import plotly.graph_objects as go
-
-st.set_page_config(layout="wide")
-st.title("🧬 Tableau de bord unifié - Résistances bactériennes")
-
-# === Onglets ===
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📌 Antibiotiques 2024", 
-    "🧪 Autres Antibiotiques", 
-    "🧠 Phénotypes Staph aureus", 
-    "🧫 Fiches Bactéries",
-    "🔔 Alertes par service"
-])
-
-# (le code précédent reste inchangé jusqu'à tab5)
 
 # === Onglet 5 : Alertes par service ===
 with tab5:

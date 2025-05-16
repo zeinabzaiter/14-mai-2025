@@ -230,11 +230,11 @@ with tab5:
 
     if alert_weeks:
         selected_week = st.selectbox("🗓️ Choisissez une semaine avec alerte :", alert_weeks)
-        services_alertes = df_service[df_service["Week"] == selected_week]["DEMANDEUR"].dropna().unique()
+        services_alertes = df_service[df_service["Week"] == selected_week]["LIBELLE_DEMANDEUR"].dropna().unique()
         if len(services_alertes) > 0:
             selected_service = st.selectbox("🏥 Choisissez un service :", services_alertes)
             st.subheader(f"Données du service **{selected_service}** pour la semaine {selected_week}")
-            df_details = df_service[(df_service["Week"] == selected_week) & (df_service["DEMANDEUR"] == selected_service)]
+            df_details = df_service[(df_service["Week"] == selected_week) & (df_service["LIBELLE_DEMANDEUR"] == selected_service)]
             st.dataframe(df_details)
         else:
             st.info("Aucun service enregistré pour cette semaine.")

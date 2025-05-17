@@ -6,7 +6,6 @@ import plotly.graph_objects as go
 st.set_page_config(layout="wide")
 st.title("🧬 Tableau de bord unifié - Résistances bactériennes")
 
-# === Onglets ===
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📌 Antibiotiques 2024", 
     "🧪 Autres Antibiotiques", 
@@ -55,6 +54,22 @@ with tab1:
     last_val = df_filtered[selected_ab].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
+
+        # === Affichage des services concernés par l'alerte
+        try:
+            df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
+            df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
+            df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
+            services = df_service[df_service['Week'] == df_filtered[week_col].iloc[-1]]['LIBELLE_DEMANDEUR'].dropna().unique()
+            if len(services) > 0:
+                st.markdown("### 🏥 **Services concernés cette semaine :**")
+                for s in services:
+                    st.write(f"🔸 {s}")
+            else:
+                st.info("Aucun service enregistré cette semaine.")
+        except Exception as e:
+            st.warning("⚠️ Impossible d'afficher les services concernés.")
+
     elif last_val < lower:
         st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")
     else:
@@ -99,6 +114,22 @@ with tab2:
     last_val = df_filtered[selected_ab].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
+
+        # === Affichage des services concernés par l'alerte
+        try:
+            df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
+            df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
+            df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
+            services = df_service[df_service['Week'] == df_filtered[week_col].iloc[-1]]['LIBELLE_DEMANDEUR'].dropna().unique()
+            if len(services) > 0:
+                st.markdown("### 🏥 **Services concernés cette semaine :**")
+                for s in services:
+                    st.write(f"🔸 {s}")
+            else:
+                st.info("Aucun service enregistré cette semaine.")
+        except Exception as e:
+            st.warning("⚠️ Impossible d'afficher les services concernés.")
+
     elif last_val < lower:
         st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")
     else:

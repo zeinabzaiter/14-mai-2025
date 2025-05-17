@@ -51,13 +51,24 @@ with tab1:
     st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
     st.write(f"💥 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
 
+    try:
+        df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
+        df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
+        df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
+        services_pic = df_service[df_service['Week'] == semaine_pic]['LIBELLE_DEMANDEUR'].dropna().unique()
+        if len(services_pic) > 0:
+            st.markdown(f"### 🏥 **Services présents la semaine du pic (S{semaine_pic}) :**")
+            for s in services_pic:
+                st.write(f"🔹 {s}")
+        else:
+            st.info("Aucun service enregistré cette semaine-là.")
+    except:
+        st.warning("⚠️ Impossible d'afficher les services de la semaine du pic.")
+
     last_val = df_filtered[selected_ab].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
         try:
-            df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
-            df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
-            df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
             semaine_actuelle = df_filtered[week_col].iloc[-1]
             services = df_service[df_service['Week'] == semaine_actuelle]['LIBELLE_DEMANDEUR'].dropna().unique()
             if len(services) > 0:
@@ -66,12 +77,14 @@ with tab1:
                     st.write(f"🔸 {s}")
             else:
                 st.info("Aucun service enregistré cette semaine.")
-        except Exception as e:
+        except:
             st.warning("⚠️ Impossible d'afficher les services concernés.")
     elif last_val < lower:
         st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")
     else:
         st.success(f"✅ Résistance dans la norme cette semaine ({last_val:.2f} %)")
+
+
 # === Onglet 2 : Autres Antibiotiques ===
 with tab2:
     st.header("🧪 Autres Antibiotiques - Staph aureus")
@@ -109,13 +122,24 @@ with tab2:
     st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
     st.write(f"💥 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
 
+    try:
+        df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
+        df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
+        df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
+        services_pic = df_service[df_service['Week'] == semaine_pic]['LIBELLE_DEMANDEUR'].dropna().unique()
+        if len(services_pic) > 0:
+            st.markdown(f"### 🏥 **Services présents la semaine du pic (S{semaine_pic}) :**")
+            for s in services_pic:
+                st.write(f"🔹 {s}")
+        else:
+            st.info("Aucun service enregistré cette semaine-là.")
+    except:
+        st.warning("⚠️ Impossible d'afficher les services de la semaine du pic.")
+
     last_val = df_filtered[selected_ab].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
         try:
-            df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
-            df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
-            df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
             semaine_actuelle = df_filtered[week_col].iloc[-1]
             services = df_service[df_service['Week'] == semaine_actuelle]['LIBELLE_DEMANDEUR'].dropna().unique()
             if len(services) > 0:
@@ -124,7 +148,7 @@ with tab2:
                     st.write(f"🔸 {s}")
             else:
                 st.info("Aucun service enregistré cette semaine.")
-        except Exception as e:
+        except:
             st.warning("⚠️ Impossible d'afficher les services concernés.")
     elif last_val < lower:
         st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")

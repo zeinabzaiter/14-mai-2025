@@ -49,18 +49,17 @@ with tab1:
     st.markdown("### 🧾 Résumé")
     st.write(f"🔢 **Nombre de semaines analysées** : {nb_tests}")
     st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
-    st.write(f"🚨 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
+    st.write(f"💥 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
 
     last_val = df_filtered[selected_ab].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
-
-        # === Affichage des services concernés par l'alerte
         try:
             df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
             df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
             df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
-            services = df_service[df_service['Week'] == df_filtered[week_col].iloc[-1]]['LIBELLE_DEMANDEUR'].dropna().unique()
+            semaine_actuelle = df_filtered[week_col].iloc[-1]
+            services = df_service[df_service['Week'] == semaine_actuelle]['LIBELLE_DEMANDEUR'].dropna().unique()
             if len(services) > 0:
                 st.markdown("### 🏥 **Services concernés cette semaine :**")
                 for s in services:
@@ -69,7 +68,6 @@ with tab1:
                 st.info("Aucun service enregistré cette semaine.")
         except Exception as e:
             st.warning("⚠️ Impossible d'afficher les services concernés.")
-
     elif last_val < lower:
         st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")
     else:
@@ -109,18 +107,17 @@ with tab2:
     st.markdown("### 🧾 Résumé")
     st.write(f"🔢 **Nombre de semaines analysées** : {nb_tests}")
     st.write(f"📊 **Moyenne de résistance** : {moyenne:.2f} %")
-    st.write(f"🚨 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
+    st.write(f"💥 **Semaine avec le pic de résistance** : Semaine {semaine_pic}")
 
     last_val = df_filtered[selected_ab].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : la résistance est élevée cette semaine ({last_val:.2f} %)")
-
-        # === Affichage des services concernés par l'alerte
         try:
             df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
             df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
             df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
-            services = df_service[df_service['Week'] == df_filtered[week_col].iloc[-1]]['LIBELLE_DEMANDEUR'].dropna().unique()
+            semaine_actuelle = df_filtered[week_col].iloc[-1]
+            services = df_service[df_service['Week'] == semaine_actuelle]['LIBELLE_DEMANDEUR'].dropna().unique()
             if len(services) > 0:
                 st.markdown("### 🏥 **Services concernés cette semaine :**")
                 for s in services:
@@ -129,7 +126,6 @@ with tab2:
                 st.info("Aucun service enregistré cette semaine.")
         except Exception as e:
             st.warning("⚠️ Impossible d'afficher les services concernés.")
-
     elif last_val < lower:
         st.warning(f"⚠️ Résistance anormalement basse cette semaine ({last_val:.2f} %)")
     else:
@@ -163,9 +159,9 @@ with tab3:
     fig.add_trace(go.Scatter(x=filtered_pheno["Week"], y=filtered_pheno[pct_col],
                              mode='lines+markers', name=f"% {selected_pheno}"))
     fig.add_trace(go.Scatter(x=filtered_pheno["Week"], y=[upper]*len(filtered_pheno),
-                             mode='lines', name="Seuil haut", line=dict(dash='dash', color='red')))
+                             mode='lines', name="Seuil haut", line=dict(dash='dash')))
     fig.add_trace(go.Scatter(x=filtered_pheno["Week"], y=[lower]*len(filtered_pheno),
-                             mode='lines', name="Seuil bas", line=dict(dash='dot', color='red')))
+                             mode='lines', name="Seuil bas", line=dict(dash='dot')))
     fig.update_layout(yaxis=dict(range=[0, 100] if selected_pheno == "MRSA" else [0, 30]), xaxis_title="Semaine", yaxis_title="Résistance (%)")
     st.plotly_chart(fig, use_container_width=True)
 
@@ -176,11 +172,25 @@ with tab3:
     st.markdown("### 🧾 Résumé")
     st.write(f"🔢 **Nombre de semaines analysées** : {nb_tests}")
     st.write(f"📊 **Moyenne de {selected_pheno}** : {moyenne:.2f} %")
-    st.write(f"🚨 **Semaine avec le pic de {selected_pheno}** : {semaine_pic}")
+    st.write(f"💥 **Semaine avec le pic de {selected_pheno}** : {semaine_pic}")
 
     last_val = filtered_pheno[pct_col].dropna().iloc[-1]
     if last_val > upper:
         st.error(f"🚨 Alerte : taux élevé de **{selected_pheno}** cette semaine ({last_val:.2f} %)")
+        try:
+            df_service = pd.read_excel("staph aureus hebdomadaire excel.xlsx")
+            df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
+            df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
+            semaine_actuelle = pd.to_datetime(filtered_pheno["Week"].iloc[-1]).isocalendar().week
+            services = df_service[df_service['Week'] == semaine_actuelle]['LIBELLE_DEMANDEUR'].dropna().unique()
+            if len(services) > 0:
+                st.markdown("### 🏥 **Services concernés cette semaine :**")
+                for s in services:
+                    st.write(f"🔸 {s}")
+            else:
+                st.info("Aucun service enregistré cette semaine.")
+        except Exception as e:
+            st.warning("⚠️ Impossible d'afficher les services concernés.")
     elif last_val < lower:
         st.warning(f"⚠️ Taux anormalement bas de **{selected_pheno}** cette semaine ({last_val:.2f} %)")
     else:
@@ -201,14 +211,11 @@ with tab4:
         selected = st.selectbox("📌 Sélectionner une bactérie :", filtered_df["Category"].unique(), key="select_bact")
         details = df_bact[df_bact["Category"] == selected].iloc[0]
         st.markdown(f"## 🧬 Détails : {selected}")
-
         st.write("**🔑 Key Antibiotics**")
         st.write(details["Key Antibiotics"])
-
         st.write("**💊 Other Antibiotics**")
         st.write(details["Other Antibiotics"])
-
-        st.write("**🧞 Phénotype**")
+        st.write("**🧬 Phénotype**")
         st.write(details["Phenotype"])
     else:
         st.info("Aucune bactérie ne correspond à votre recherche.")

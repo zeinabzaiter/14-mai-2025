@@ -30,7 +30,7 @@ with tab1:
             df_ab.columns = df_ab.columns.str.strip()
 
             if "Week" in df_ab.columns:
-                week_col = "Week"
+                week_col = "Semaine"
             else:
                 st.error("❌ Colonne 'Week' introuvable dans le fichier importé.")
                 st.write("Colonnes trouvées :", list(df_ab.columns))

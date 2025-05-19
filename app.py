@@ -376,3 +376,54 @@ with tab4:
             st.error(f"Erreur lors de la lecture du fichier : {str(e)}")
     else:
         st.info("📥 Veuillez charger un fichier pour afficher les données.")
+st.set_page_config(page_title="Tableau de bord unifié", layout="wide")
+
+# Déclaration des onglets
+import streamlit as st
+import pandas as pd
+
+# Onglets de navigation
+
+
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Antibiotiques 2024",
+    "Autres Antibiotiques",
+    "Phénotypes Staph aureus",
+    "Fiches Bactéries",
+    "Alertes par service"
+])
+
+# === Onglet 5 : Alertes par service ===
+with tab5:
+    st.header("⚠️ Alertes par service")
+    uploaded_file_service = st.file_uploader("📂 Charger un fichier des services (Excel)", type=["xlsx"], key="upload_service")
+
+    if uploaded_file_service is not None:
+        try:
+            df_service = pd.read_excel(uploaded_file_service)
+            df_service.columns = df_service.columns.str.strip()
+
+            if "DATE_ENTREE" not in df_service.columns:
+                st.error("❌ Colonne 'DATE_ENTREE' absente du fichier.")
+                st.write("Colonnes disponibles :", list(df_service.columns))
+                st.stop()
+
+            df_service['DATE_ENTREE'] = pd.to_datetime(df_service['DATE_ENTREE'], errors='coerce')
+            df_service['Week'] = df_service['DATE_ENTREE'].dt.isocalendar().week
+
+            unique_weeks = sorted(df_service['Week'].dropna().unique().astype(int))
+            selected_week = st.selectbox("📆 Choisir une semaine :", unique_weeks)
+
+            services_week = df_service[df_service['Week'] == selected_week]['LIBELLE_DEMANDEUR'].dropna().unique()
+            st.markdown(f"### 🏥 Services ayant généré des analyses en semaine {selected_week}")
+
+            if len(services_week) > 0:
+                for s in services_week:
+                    st.write(f"🔹 {s}")
+            else:
+                st.info("Aucun service n’a été enregistré cette semaine.")
+
+        except Exception as e:
+            st.error(f"Erreur lors de la lecture du fichier : {str(e)}")
+    else:
+        st.info("📥 Veuillez charger un fichier pour afficher les services par semaine.")

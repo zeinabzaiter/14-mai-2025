@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-
+import plotly.graph_objects as go
 st.set_page_config(page_title="Tableau de bord unifié", layout="wide")
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([

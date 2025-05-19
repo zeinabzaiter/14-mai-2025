@@ -1,3 +1,19 @@
+import streamlit as st
+import pandas as pd
+
+st.set_page_config(page_title="Tableau de bord unifié", layout="wide")
+
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Antibiotiques 2024",
+    "Autres Antibiotiques",
+    "Phénotypes Staph aureus",
+    "Fiches Bactéries",
+    "Alertes par service"
+])
+
+with tab1:
+    st.header("📌 Antibiotiques 2024")
+
 # === Onglet 1 : Antibiotiques 2024 ===
 with tab1:
     st.header("📌 Antibiotiques - Données 2024")
